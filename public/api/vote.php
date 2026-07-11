@@ -1,0 +1,4 @@
+<?php
+require __DIR__ . '/../../config/bootstrap.php';
+use BandElo\Http\Response; use BandElo\Http\Security; use BandElo\Repository\ArtistRepository; use BandElo\Service\EloService; use BandElo\Service\VoteService;
+try { $userId = Security::requireUser(); Security::requireCsrf($_SERVER['HTTP_X_CSRF_TOKEN'] ?? null); $input = json_decode(file_get_contents('php://input') ?: '{}', true, 512, JSON_THROW_ON_ERROR); $service = new VoteService($db->pdo(), new ArtistRepository($db->pdo()), new EloService($config->int('ELO_K_FACTOR', 32))); $result = $service->vote($userId, (int) $input['artist_a_id'], (int) $input['artist_b_id'], (int) $input['winner_artist_id']); Response::json(['success' => true, 'result' => $result]); } catch (Throwable $e) { Response::json(['success' => false, 'error' => $e->getMessage()], 400); }
