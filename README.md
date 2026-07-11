@@ -110,7 +110,8 @@ Authentifiziert. Benötigt Header `X-CSRF-Token`. Setzt die persönliche Gewinne
 
 ## Fehlerbehebung
 
-- **Spotify Callback ungültig:** Redirect URI in Spotify und `.env` muss exakt identisch sein.
+- **Spotify Callback ungültig:** Redirect URI in Spotify und `.env` muss exakt identisch sein. Die Callback-Seite zeigt Spotify-Fehlerdetails an und schreibt sie zusätzlich ins PHP Error Log.
 - **PDO-Verbindungsfehler:** DB-Host, Port, Benutzerrechte und Firewall prüfen.
+- **Voting ohne Login:** `/vote.php` leitet nicht angemeldete Besucher zurück zur Startseite.
 - **Leere Voting-Seite:** Der Spotify-Account muss Top Artists liefern; beim ersten Login werden maximal 20 importiert.
 - **403/404 in Apache:** DocumentRoot auf `public/` und Dateirechte prüfen.

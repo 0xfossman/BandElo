@@ -29,6 +29,9 @@ $loggedIn = isset($_SESSION['user_id']);
     </nav>
 
     <section class="hero-card p-4 p-md-5 bg-white">
+        <?php if (isset($_GET['login_required'])): ?>
+            <p class="alert alert-warning">Bitte melde dich zuerst mit Spotify an, bevor du abstimmst.</p>
+        <?php endif; ?>
         <h1 class="display-5 fw-bold">BandElo</h1>
         <p class="lead">Importiere deine Spotify Top-20-Interpreten und finde deinen Favoriten im Gewinner-bleibt-Modus.</p>
         <?php if ($loggedIn): ?>

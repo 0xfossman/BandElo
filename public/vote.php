@@ -2,9 +2,13 @@
 
 require __DIR__ . '/../config/bootstrap.php';
 
+use BandElo\Http\Response;
 use BandElo\Http\Security;
 
-Security::requireUser();
+if (!isset($_SESSION['user_id'])) {
+    Response::redirect('/?login_required=1');
+}
+
 $csrf = Security::csrfToken();
 ?>
 <!doctype html>

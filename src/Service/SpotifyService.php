@@ -45,22 +45,74 @@ final class SpotifyService
     private function requestToken(array $fields): array
     {
         $curl = curl_init('https://accounts.spotify.com/api/token');
-        curl_setopt_array($curl, [CURLOPT_POST => true, CURLOPT_POSTFIELDS => http_build_query($fields), CURLOPT_RETURNTRANSFER => true, CURLOPT_HTTPHEADER => ['Authorization: Basic ' . base64_encode($this->config->get('SPOTIFY_CLIENT_ID') . ':' . $this->config->get('SPOTIFY_CLIENT_SECRET')), 'Content-Type: application/x-www-form-urlencoded']]);
+        curl_setopt_array($curl, [
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => http_build_query($fields),
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 15,
+            CURLOPT_HTTPHEADER => [
+                'Authorization: Basic ' . base64_encode($this->config->get('SPOTIFY_CLIENT_ID') . ':' . $this->config->get('SPOTIFY_CLIENT_SECRET')),
+                'Content-Type: application/x-www-form-urlencoded',
+            ],
+        ]);
+
         $body = curl_exec($curl);
-        if ($body === false || curl_getinfo($curl, CURLINFO_RESPONSE_CODE) >= 400) {
-            throw new \RuntimeException('Spotify token request failed.');
+        $status = (int) curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
+        if ($body === false || $status >= 400) {
+            throw new \RuntimeException($this->spotifyErrorMessage('token', $curl, $status, is_string($body) ? $body : null));
         }
-        return json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+
+        return json_decode((string) $body, true, 512, JSON_THROW_ON_ERROR);
     }
 
     private function api(string $url, string $accessToken): array
     {
         $curl = curl_init($url);
-        curl_setopt_array($curl, [CURLOPT_RETURNTRANSFER => true, CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $accessToken]]);
+        curl_setopt_array($curl, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 15,
+            CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $accessToken],
+        ]);
+
         $body = curl_exec($curl);
-        if ($body === false || curl_getinfo($curl, CURLINFO_RESPONSE_CODE) >= 400) {
-            throw new \RuntimeException('Spotify API request failed.');
+        $status = (int) curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
+        if ($body === false || $status >= 400) {
+            throw new \RuntimeException($this->spotifyErrorMessage('API', $curl, $status, is_string($body) ? $body : null));
         }
-        return json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+
+        return json_decode((string) $body, true, 512, JSON_THROW_ON_ERROR);
+    }
+
+    private function spotifyErrorMessage(string $context, \CurlHandle $curl, int $status, ?string $body): string
+    {
+        $curlError = curl_error($curl);
+        $details = $curlError !== '' ? $curlError : $this->extractSpotifyError($body);
+        $statusText = $status > 0 ? "HTTP {$status}" : 'no HTTP response';
+
+        return sprintf('Spotify %s request failed (%s): %s', $context, $statusText, $details);
+    }
+
+    private function extractSpotifyError(?string $body): string
+    {
+        if ($body === null || $body === '') {
+            return 'empty response body';
+        }
+
+        try {
+            $payload = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+            if (isset($payload['error_description'])) {
+                return (string) $payload['error_description'];
+            }
+            if (isset($payload['error']['message'])) {
+                return (string) $payload['error']['message'];
+            }
+            if (isset($payload['error'])) {
+                return is_string($payload['error']) ? $payload['error'] : json_encode($payload['error'], JSON_THROW_ON_ERROR);
+            }
+        } catch (\JsonException) {
+            // Fall through to a short raw response snippet.
+        }
+
+        return substr($body, 0, 250);
     }
 }
