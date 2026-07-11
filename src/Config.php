@@ -10,13 +10,7 @@ final class Config
 
     public function get(string $key, ?string $default = null): string
     {
-        if (array_key_exists($key, $this->env)) {
-            $value = $this->env[$key];
-        } else {
-            $environmentValue = getenv($key);
-            $value = $environmentValue === false ? $default : $environmentValue;
-        }
-
+        $value = $this->env[$key] ?? getenv($key) ?: $default;
         if ($value === null) {
             throw new \RuntimeException("Missing configuration value: {$key}");
         }

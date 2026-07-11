@@ -29,14 +29,6 @@ cp .env.example .env
 composer install-app
 ```
 
-Wenn du Composer bewusst als `root` ausführst, setze die von Composer erwartete Umgebungsvariable:
-
-```bash
-COMPOSER_ALLOW_SUPERUSER=1 composer install-app
-```
-
-`DB_PASSWORD` darf leer bleiben, wenn der MariaDB-Benutzer kein Passwort verwendet.
-
 Benötigte `.env`-Werte:
 
 ```dotenv
@@ -65,7 +57,7 @@ Danach:
 ```bash
 cd /var/www/bandelo
 sudo nano .env
-COMPOSER_ALLOW_SUPERUSER=1 composer install-app
+composer install-app
 sudo systemctl reload apache2
 ```
 
