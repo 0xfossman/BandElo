@@ -38,6 +38,37 @@ final class ArtistRepository
         return $stmt->fetchAll();
     }
 
+    public function nextPairWithChampion(int $userId, int $championId, array $excludedIds = []): array
+    {
+        $champion = $this->findForUser($userId, $championId);
+        if ($champion === null) {
+            return $this->nextPair($userId);
+        }
+
+        $excluded = array_values(array_unique(array_map('intval', array_merge($excludedIds, [$championId]))));
+        $placeholders = implode(',', array_fill(0, count($excluded), '?'));
+        $sql = "SELECT a.* FROM artists a INNER JOIN user_artists ua ON ua.artist_id = a.id WHERE ua.user_id = ? AND a.id NOT IN ({$placeholders}) ORDER BY RAND() LIMIT 1";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute(array_merge([$userId], $excluded));
+        $challenger = $stmt->fetch();
+
+        if (!$challenger) {
+            $stmt = $this->pdo->prepare('SELECT a.* FROM artists a INNER JOIN user_artists ua ON ua.artist_id = a.id WHERE ua.user_id = ? AND a.id <> ? ORDER BY RAND() LIMIT 1');
+            $stmt->execute([$userId, $championId]);
+            $challenger = $stmt->fetch();
+        }
+
+        return $challenger ? [$champion, $challenger] : [$champion];
+    }
+
+    public function findForUser(int $userId, int $artistId): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT a.* FROM artists a INNER JOIN user_artists ua ON ua.artist_id = a.id WHERE ua.user_id = ? AND a.id = ?');
+        $stmt->execute([$userId, $artistId]);
+        $artist = $stmt->fetch();
+        return $artist ?: null;
+    }
+
     public function userOwnsArtists(int $userId, int $a, int $b): bool
     {
         $stmt = $this->pdo->prepare('SELECT COUNT(*) FROM user_artists WHERE user_id = ? AND artist_id IN (?, ?)');

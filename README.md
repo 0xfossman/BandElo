@@ -1,6 +1,6 @@
 # BandElo
 
-BandElo ist ein funktionaler LAMP-Prototyp: Benutzer melden sich mit Spotify an, importieren ihre Top-20-Interpreten und stimmen paarweise ab. Daraus entstehen globale Elo-Werte und ein Community-Leaderboard.
+BandElo ist ein funktionaler LAMP-Prototyp: Benutzer melden sich mit Spotify an, importieren ihre Top-20-Interpreten und stimmen im Gewinner-bleibt-Modus paarweise ab. Der angeklickte Interpret bleibt in der nächsten Wahl stehen; jede persönliche Runde endet nach genau 20 Votes mit dem aktuellen Favoriten. Daraus entstehen globale Elo-Werte und ein Community-Leaderboard.
 
 ## Voraussetzungen
 
@@ -13,7 +13,7 @@ BandElo ist ein funktionaler LAMP-Prototyp: Benutzer melden sich mit Spotify an,
 ## Projektstruktur
 
 - `public/`: DocumentRoot, Seiten und JSON-Endpunkte
-- `public/api/`: `vote.php`, `leaderboard.php`, `next-pair.php`
+- `public/api/`: `vote.php`, `leaderboard.php`, `next-pair.php`, `reset-tournament.php`
 - `src/`: objektorientierte App-, Repository- und Service-Klassen
 - `config/bootstrap.php`: `.env`, Session und PDO-Bootstrap
 - `database/schema.sql`: vollständiges MariaDB-Schema
@@ -28,6 +28,14 @@ cp .env.example .env
 # .env ausfüllen
 composer install-app
 ```
+
+Wenn du Composer bewusst als `root` ausführst, setze die von Composer erwartete Umgebungsvariable:
+
+```bash
+COMPOSER_ALLOW_SUPERUSER=1 composer install-app
+```
+
+`DB_PASSWORD` darf leer bleiben, wenn der MariaDB-Benutzer kein Passwort verwendet.
 
 Benötigte `.env`-Werte:
 
@@ -57,7 +65,7 @@ Danach:
 ```bash
 cd /var/www/bandelo
 sudo nano .env
-composer install-app
+COMPOSER_ALLOW_SUPERUSER=1 composer install-app
 sudo systemctl reload apache2
 ```
 
@@ -80,7 +88,7 @@ Der VirtualHost muss auf `public/` zeigen. Beispiel siehe `scripts/deploy.sh`. `
 
 ### `GET /api/next-pair.php`
 
-Authentifiziert. Liefert zwei zufällige Künstler des aktuellen Benutzers.
+Authentifiziert. Liefert zu Beginn zwei zufällige Künstler des aktuellen Benutzers. Nach einem Vote bleibt der Gewinner als `champion_id` stehen und wird mit einem neuen Herausforderer gepaart. Die Antwort enthält `votes`, `votes_remaining` und `complete`; `complete` wird nach 20 Votes gesetzt.
 
 ### `POST /api/vote.php`
 
@@ -90,7 +98,11 @@ Authentifiziert. JSON-Body:
 {"artist_a_id":1,"artist_b_id":2,"winner_artist_id":1}
 ```
 
-Benötigt Header `X-CSRF-Token`. Aktualisiert Elo und speichert den Vote.
+Benötigt Header `X-CSRF-Token`. Aktualisiert Elo, speichert den Vote und merkt den Gewinner in der Session als aktuellen Favoriten für die nächste Paarung. Nach 20 Votes lehnt der Endpunkt weitere Votes ab, bis die Runde zurückgesetzt wird.
+
+### `POST /api/reset-tournament.php`
+
+Authentifiziert. Benötigt Header `X-CSRF-Token`. Setzt die persönliche Gewinner-bleibt-Runde zurück.
 
 ### `GET /api/leaderboard.php?limit=10`
 

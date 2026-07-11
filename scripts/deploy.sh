@@ -12,7 +12,7 @@ fi
 mkdir -p "$APP_DIR"
 rsync -a --delete --exclude .git "$REPO_DIR/" "$APP_DIR/"
 cd "$APP_DIR"
-composer install --no-dev --optimize-autoloader
+COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader
 cp -n .env.example .env
 mkdir -p var/cache var/logs
 chown -R www-data:www-data var public
@@ -32,4 +32,4 @@ APACHE
 a2enmod rewrite
 a2ensite bandelo.conf
 systemctl reload apache2
-echo "Deployment complete. Edit ${APP_DIR}/.env, run: cd ${APP_DIR} && composer install-app, then reload Apache."
+echo "Deployment complete. Edit ${APP_DIR}/.env, run: cd ${APP_DIR} && COMPOSER_ALLOW_SUPERUSER=1 composer install-app, then reload Apache."

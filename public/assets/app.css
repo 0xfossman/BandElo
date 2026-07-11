@@ -1,0 +1,56 @@
+:root {
+    --bandelo-accent: #1db954;
+    --bandelo-dark: #172018;
+}
+
+body {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #f8fff9 0%, #eef3f0 100%);
+}
+
+.navbar-brand {
+    color: var(--bandelo-dark);
+}
+
+.hero-card,
+.content-card {
+    border: 0;
+    border-radius: 1.25rem;
+    box-shadow: 0 1rem 2.5rem rgba(23, 32, 24, 0.08);
+}
+
+.vote-card {
+    overflow: hidden;
+    transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.vote-card:hover,
+.vote-card:focus-visible {
+    box-shadow: 0 1.25rem 2.5rem rgba(29, 185, 84, 0.18) !important;
+    transform: translateY(-3px);
+}
+
+.artist-image {
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    width: 100%;
+}
+
+.round-progress {
+    height: 0.85rem;
+}
+
+.champion-card {
+    border-color: var(--bandelo-accent) !important;
+}
+
+@media (max-width: 767.98px) {
+    .display-5,
+    .display-6 {
+        font-size: 2rem;
+    }
+
+    .navbar .navbar-nav {
+        font-size: 0.95rem;
+    }
+}
