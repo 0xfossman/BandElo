@@ -1,3 +1,5 @@
+[![PHP Composer](https://github.com/0xfossman/BandElo/actions/workflows/php.yml/badge.svg)](https://github.com/0xfossman/BandElo/actions/workflows/php.yml)
+
 # BandElo
 
 BandElo ist ein funktionaler LAMP-Prototyp: Benutzer melden sich mit Spotify an, importieren ihre Top-20-Interpreten und stimmen im Gewinner-bleibt-Modus paarweise ab. Der angeklickte Interpret bleibt in der nächsten Wahl stehen; jede persönliche Runde endet nach genau 20 Votes mit dem aktuellen Favoriten. Daraus entstehen globale Elo-Werte und ein Community-Leaderboard.
