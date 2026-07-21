@@ -1,1 +1,20 @@
-{"name":"bandelo/bandelo","description":"Spotify artist Elo voting prototype","type":"project","require":{"php":">=8.2","ext-pdo":"*","ext-json":"*","ext-curl":"*"},"autoload":{"psr-4":{"BandElo\\":"src/"}},"scripts":{"install-app":"php scripts/install.php"}}
+{
+  "name": "bandelo/bandelo",
+  "description": "Spotify artist Elo voting prototype",
+  "type": "project",
+  "license": "Beerware",
+  "require": {
+    "php": ">=8.2",
+    "ext-pdo": "*",
+    "ext-json": "*",
+    "ext-curl": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "BandElo\\": "src/"
+    }
+  },
+  "scripts": {
+    "install-app": "php scripts/install.php"
+  }
+}
